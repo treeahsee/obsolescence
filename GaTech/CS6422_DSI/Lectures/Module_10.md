@@ -181,4 +181,6 @@ std::unordered_map <
 - Word based sharding
     - shard 1 words 1-100, replicas server A,B
     - shard 2 words 101 -- 200, replicas servers C,D
-    
+
+## Rtree
+- Well suited for 
