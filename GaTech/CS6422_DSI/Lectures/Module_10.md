@@ -183,4 +183,108 @@ std::unordered_map <
     - shard 2 words 101 -- 200, replicas servers C,D
 
 ## Rtree
-- Well suited for 
+- Well suited for spatial indexing and nearest neighbhor query
+
+### Limitations of B+ Tree
+- Limited in handling multi dimensial data
+
+## R-Tree: A Multidemnsional Index
+- We can represent as a point and group heirarchaly in clusters
+- Balanced tree
+- Data types
+    - points
+    - rectangles
+- Nodes
+    - leaf nodes
+        - points
+    - inner nodes
+        - child nodes and their bounding rectangles
+    - root node
+        - top most inner node
+        - entry point
+- Point
+    ``` C++
+    struct Point {
+        float x,y;
+        Point(float x, float y) : x(x), y(y) {}
+    };
+    ```
+- Rectangle
+    ``` C++
+    struct Rectangle {
+        float minX, minY,maxX,maxY;
+        Rectangle(float minX, float minY, float maxX, float maxY)
+            : minx(minX), minY(minY), maxX(maxX), maxY(maxY) {}
+
+        bool contains(const Point &p);
+        bool intersects(const Rectangle &other) const;
+    }
+    ```
+- Rectangle: Contains
+    ``` C++
+    bool contains(const Point &p) {
+        return (p.x >= minX && p.x <= maxX
+                && p.y >= minY && p.y <= maxY)
+    }
+    ```
+- Rectangle: Intersects
+    ``` C++
+    bool intersects(const Rectangle &other) conts {
+        return !(other.mixX > maxX || other.maxX < minX
+                || other.minY > maxY || other.maxY < minY>)
+    }
+    ```
+
+- Inserts
+    - Find best child node based on least enlargment of bounding rectangle
+    ``` C++
+    void insert(RTreeNode * node, const Point &point, const Rectangle &rect) {
+    ...
+        else {
+            int bestChild = chooseBestChild(node, rect);
+            insert(node->children[bestChild], point, rect);
+            node->childrenRectangles[bestChild].expand(rect);
+        }
+    }
+    ```
+
+- Choose Best Child
+    ``` C++
+    int chooseBestChild(RTreeNode * node, const Rectangle &rect) {
+    int bestChild = 0;
+        for (size_t i = 0; i < node->children.size(); ++i) {
+            Rectangle enlarged = node->childrenRectangles[i];
+            enlarged.expand(rect);
+            float enlargement = ...
+            if (enlargement < minEnlargement) {
+                minEnlargement = enlargement;
+                bestChild = i;
+            }
+            return bestChild;
+        }
+
+    }
+    ```
+- Node Spitting
+    - Pick seeds which are points in the bounding box that are furthest apart from eachother
+
+### R-Tree Supported Queries and Applications
+- Multi dimensional Range Query
+    - salary > 100k  age > 35
+- Nearest Neighbhor
+- Applications
+    - Find nearest driver to rider location
+    - Find nearest resteraunt to user location
+    - game engines
+
+### ND R-Tree
+- generalizes R-Tree to n-dimensions
+
+## Learned Indexed
+- All nodes are ML models
+- Reduce memory usage and faster lookups
+
+### Limitations of B+ Tree
+- Fixed Structure
+- Memory Overhead
+- Rigid Paritioning
