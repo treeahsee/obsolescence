@@ -14,3 +14,7 @@ bq show --format=prettyjson <project_name>:<dataset>.<table_name>
     bq show --format=prettyjson <project_name>:<dataset>.$table | jq '.schema.fields[] | {name, type, mode}'
     echo ""
   done
+
+## bq Query
+bq query --use_legacy_sql=false --format=prettyjson < <sql_file>.sql | jq '.'
+
