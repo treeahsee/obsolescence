@@ -1,4 +1,4 @@
-## Search and Replace (global)
+## Search and Replace
 ### Global
 :%s/old/new/g
 ### Current Line 
