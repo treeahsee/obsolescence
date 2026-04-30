@@ -18,3 +18,5 @@ bq show --format=prettyjson <project_name>:<dataset>.<table_name>
 ## bq Query
 bq query --use_legacy_sql=false --format=prettyjson < <sql_file>.sql | jq '.'
 
+## New Dataset
+bq mk <datset>
