@@ -3,30 +3,56 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <wctype.h>
+#include <string.h>
 
 enum {LINE_COUNT, WORD_COUNT, CHAR_COUNT} mode = LINE_COUNT;
 
 
+int word_cnt(char *line) {
+    int cnt = 0;
+    char *token = strtok(line, " \t\n\r");
+    while(token != NULL) {
+        cnt++;
+        printf("%s\n", token);
+        token = strtok(NULL, " \t\n\r");
+ 
+    }
+    return cnt;
+}
+
+
 int open_file(char *file_name, int count_mode) {
     FILE *fp;
-    int c;
-    int line_count = 0;
-    int word_count = 0;
-    int char_count = 0;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int line_count = 0, word_count = 0, char_count = 0;
 
     fp = fopen(file_name, "r");
-    
-    while ((c = fgetc(fp)) != EOF) {
-        if (c == '\n')
-            line_count++;
-        if (iswspace(c)) // wrong im likely counting consecutive white space
-            word_count++;
-        char_count++;
+    if (fp == NULL) {
+        exit(EXIT_FAILURE);
     }
-
-    printf("%d\t%d\t%d\n", line_count, word_count, char_count);
     
+    while ((read = getline(&line, &len, fp)) != -1) {
+        switch(count_mode) {
+            case LINE_COUNT:
+                line_count++;
+                break;
+            case  WORD_COUNT:
+                word_count += word_cnt(line);
+                break;
+            case CHAR_COUNT:
+                char_count += strlen(line);
+                break;
+            default:
+                printf("whoops\n");
+                exit(EXIT_FAILURE);
+        }
+    }
     fclose(fp);
+    printf("line count: %d, word count %d, char count %d \n", line_count, word_count, char_count);
+    if (line)
+        free(line);
     return 0;
 }
 
