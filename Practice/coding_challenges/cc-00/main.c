@@ -5,9 +5,29 @@
 #include <wctype.h>
 #include <string.h>
 #include <wchar.h>
+#include <locale.h>
 
 enum {LINE_COUNT, WORD_COUNT, CHAR_COUNT, M_COUNT, DEFAULT} mode = LINE_COUNT;
 
+void print_func(char *file_name, int count_mode, int word_count, int line_count, size_t m_count,size_t char_count) {
+    switch (count_mode) {
+        case LINE_COUNT:
+            printf("%d %s\n", line_count, file_name);
+            break;
+        case WORD_COUNT:
+            printf("%d %s\n", word_count, file_name);
+            break;
+        case CHAR_COUNT:
+            printf("%zu %s\n", char_count, file_name);
+            break;
+        case M_COUNT:
+            printf("%zu %s\n", m_count, file_name);
+            break;
+        case DEFAULT:
+            printf("%zu %d %d %s\n", char_count, line_count, word_count, file_name);
+            break;
+    }
+}
 
 int word_cnt(char *line) {
     int cnt = 0;
@@ -29,17 +49,13 @@ size_t m_cnt(char *line) {
     return cnt;
 }
 
-int open_file(char *file_name, int count_mode) {
-    FILE *fp;
+int counter(FILE *fp, char *file_name, int count_mode) {
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
-    int line_count = 0, word_count = 0, char_count = 0, m_count = 0;
+    int line_count = 0, word_count = 0;
+    size_t char_count = 0, m_count = 0;
 
-    fp = fopen(file_name, "r");
-    if (fp == NULL) {
-        exit(EXIT_FAILURE);
-    }
     
     while ((read = getline(&line, &len, fp)) != -1) {
         switch(count_mode) {
@@ -50,7 +66,7 @@ int open_file(char *file_name, int count_mode) {
                 word_count += word_cnt(line);
                 break;
             case CHAR_COUNT:
-                char_count += strlen(line);
+                char_count += read;
                 break;
             case M_COUNT:
                 m_count += m_cnt(line);
@@ -58,7 +74,7 @@ int open_file(char *file_name, int count_mode) {
             case DEFAULT:
                 line_count++;
                 word_count += word_cnt(line); 
-                char_count += strlen(line); 
+                char_count += read; 
                 break;
             default:
                 printf("hi\n");
@@ -66,9 +82,11 @@ int open_file(char *file_name, int count_mode) {
         }
     }
     fclose(fp);
-    printf("line count: %d, word count %d, char count %d, multibyte count %d \n", line_count, word_count, char_count, m_count);
+
     if (line)
         free(line);
+    
+    print_func(file_name, count_mode, word_count, line_count, m_count, char_count);
     return 0;
 }
 
@@ -88,13 +106,15 @@ int main(int argc, char *argv[]) {
                 break;
             case 'm':
                 mode = M_COUNT;
+                setlocale(LC_ALL, "");
                 break;
             default:
                 fprintf(stderr, "Usage: %s [-l] [-w] [-c] [-m]\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
-
-    open_file(argv[optind], mode);
+    FILE *fp = argv[optind] ? fopen(argv[optind], "r") : stdin;
+    char *file_name = argv[optind] ? argv[optind] : "";   
+    counter(fp, file_name, mode);
     return 0;
 }
