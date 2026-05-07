@@ -4,8 +4,9 @@
 #include <ctype.h>
 #include <wctype.h>
 #include <string.h>
+#include <wchar.h>
 
-enum {LINE_COUNT, WORD_COUNT, CHAR_COUNT} mode = LINE_COUNT;
+enum {LINE_COUNT, WORD_COUNT, CHAR_COUNT, M_COUNT} mode = LINE_COUNT;
 
 
 int word_cnt(char *line) {
@@ -20,13 +21,20 @@ int word_cnt(char *line) {
     return cnt;
 }
 
+size_t m_cnt(char *line) {
+    mbstate_t state = {0};
+    const char *src = line;
+
+    size_t cnt = mbsrtowcs(NULL, &src, 0, &state);
+    return cnt;
+}
 
 int open_file(char *file_name, int count_mode) {
     FILE *fp;
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
-    int line_count = 0, word_count = 0, char_count = 0;
+    int line_count = 0, word_count = 0, char_count = 0, m_count = 0;
 
     fp = fopen(file_name, "r");
     if (fp == NULL) {
@@ -44,13 +52,16 @@ int open_file(char *file_name, int count_mode) {
             case CHAR_COUNT:
                 char_count += strlen(line);
                 break;
+            case M_COUNT:
+                m_count += m_cnt(line);
+                break;
             default:
                 printf("whoops\n");
                 exit(EXIT_FAILURE);
         }
     }
     fclose(fp);
-    printf("line count: %d, word count %d, char count %d \n", line_count, word_count, char_count);
+    printf("line count: %d, word count %d, char count %d, multibyte count %d \n", line_count, word_count, char_count, m_count);
     if (line)
         free(line);
     return 0;
@@ -58,7 +69,7 @@ int open_file(char *file_name, int count_mode) {
 
 int main(int argc, char *argv[]) {
     int opt;
-    while ((opt = getopt(argc, argv, "lwc")) != -1) {
+    while ((opt = getopt(argc, argv, "lwcm")) != -1) {
         switch (opt) {
             case 'l':
                 mode = LINE_COUNT;
@@ -69,8 +80,11 @@ int main(int argc, char *argv[]) {
             case 'c':
                 mode = CHAR_COUNT;
                 break;
+            case 'm':
+                mode = M_COUNT;
+                break;
             default:
-                fprintf(stderr, "Usage: %s [-l] [-w] [-c]\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-l] [-w] [-c] [-m]\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
