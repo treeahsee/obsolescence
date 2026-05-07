@@ -6,7 +6,7 @@
 #include <string.h>
 #include <wchar.h>
 
-enum {LINE_COUNT, WORD_COUNT, CHAR_COUNT, M_COUNT} mode = LINE_COUNT;
+enum {LINE_COUNT, WORD_COUNT, CHAR_COUNT, M_COUNT, DEFAULT} mode = LINE_COUNT;
 
 
 int word_cnt(char *line) {
@@ -14,7 +14,7 @@ int word_cnt(char *line) {
     char *token = strtok(line, " \t\n\r");
     while(token != NULL) {
         cnt++;
-        printf("%s\n", token);
+        // printf("%s\n", token);
         token = strtok(NULL, " \t\n\r");
  
     }
@@ -55,9 +55,14 @@ int open_file(char *file_name, int count_mode) {
             case M_COUNT:
                 m_count += m_cnt(line);
                 break;
+            case DEFAULT:
+                line_count++;
+                word_count += word_cnt(line); 
+                char_count += strlen(line); 
+                break;
             default:
-                printf("whoops\n");
-                exit(EXIT_FAILURE);
+                printf("hi\n");
+                break;
         }
     }
     fclose(fp);
@@ -69,6 +74,7 @@ int open_file(char *file_name, int count_mode) {
 
 int main(int argc, char *argv[]) {
     int opt;
+    mode = DEFAULT;
     while ((opt = getopt(argc, argv, "lwcm")) != -1) {
         switch (opt) {
             case 'l':
