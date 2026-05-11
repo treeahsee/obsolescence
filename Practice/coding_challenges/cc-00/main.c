@@ -7,7 +7,7 @@
 #include <wchar.h>
 #include <locale.h>
 
-enum {LINE_COUNT, WORD_COUNT, CHAR_COUNT, M_COUNT, DEFAULT} mode = LINE_COUNT;
+enum {LINE_COUNT, WORD_COUNT, CHAR_COUNT, M_COUNT, DEFAULT} mode;
 
 void print_func(char *file_name, int count_mode, int word_count, int line_count, size_t m_count,size_t char_count) {
     switch (count_mode) {
@@ -24,7 +24,7 @@ void print_func(char *file_name, int count_mode, int word_count, int line_count,
             printf("%zu %s\n", m_count, file_name);
             break;
         case DEFAULT:
-            printf("%zu %d %d %s\n", char_count, line_count, word_count, file_name);
+            printf("%d %d %zu %s\n", line_count, word_count, char_count,  file_name);
             break;
     }
 }
