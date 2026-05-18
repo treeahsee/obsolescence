@@ -19,4 +19,10 @@ bq show --format=prettyjson <project_name>:<dataset>.<table_name>
 bq query --use_legacy_sql=false --format=prettyjson < <sql_file>.sql | jq '.'
 
 ## New Dataset
-bq mk <datset>
+bq mk <dataset>
+
+## List Transfer Config / Scheduled Queries
+bq ls --transfer_config --project_id=<project_name>
+
+## List Routines tied to a dataset
+bq ls --routines --project_id=<project_name> <dataset>
